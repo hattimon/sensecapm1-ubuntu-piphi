@@ -20,7 +20,6 @@ This repository, based on [https://github.com/hattimon/sensecapm1-ubuntu-piphi/t
    apt install wget
    ```
    ```
-   apt install wget
    wget https://raw.githubusercontent.com/hattimon/sensecapm1-ubuntu-piphi/main/install-docker-piphi.sh
    chmod +x install-docker-piphi.sh
    ./install-docker-piphi.sh
