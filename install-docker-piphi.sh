@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Docker and PiPhi Installation Script for Ubuntu Container
-# Version: 1.2
+# Version: 1.3
 # Author: hattimon (with assistance from Grok, xAI)
-# Date: September 04, 2025, 12:28 AM CEST
+# Date: September 04, 2025, 01:15 AM CEST
 # Description: Installs Docker and runs PiPhi Network Docker Compose inside the Ubuntu container, with USB GPS support. Based on https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main.
 # This script should be run inside the Ubuntu container after running install-piphi.sh on the host.
 
@@ -42,6 +42,7 @@ MESSAGES[pl,install_compose]="Instalacja pluginu Docker Compose..."
 MESSAGES[pl,verify_compose]="Weryfikacja instalacji Docker Compose..."
 MESSAGES[pl,navigate_dir]="Przejście do katalogu PiPhi Network Docker Compose..."
 MESSAGES[pl,inspect_compose]="Sprawdzenie pliku Docker Compose..."
+MESSAGES[pl,start_gpsd]="Uruchamianie usługi GPSD..."
 MESSAGES[pl,pull_images]="Pobieranie wymaganych obrazów Dockera..."
 MESSAGES[pl,start_services]="Uruchamianie usług PiPhi Network..."
 MESSAGES[pl,verify_containers]="Weryfikacja uruchomionych kontenerów..."
@@ -49,6 +50,7 @@ MESSAGES[pl,install_complete]="Instalacja Dockera i PiPhi zakończona! Panel PiP
 MESSAGES[pl,grafana_access]="Dostęp do Grafana: http://<IP urządzenia>:3000"
 MESSAGES[pl,gps_check]="Sprawdź GPS: cgps -s"
 MESSAGES[pl,gps_note]="Uwaga: Umieść urządzenie na zewnątrz dla fix GPS (1–5 minut)."
+MESSAGES[pl,install_cron]="Instalacja i konfiguracja crona..."
 
 MESSAGES[en,header]="Module: Installing Docker and PiPhi in Ubuntu Container"
 MESSAGES[en,separator]="================================================================"
@@ -63,6 +65,7 @@ MESSAGES[en,install_compose]="Installing Docker Compose Plugin..."
 MESSAGES[en,verify_compose]="Verifying Docker Compose Installation..."
 MESSAGES[en,navigate_dir]="Navigating to the PiPhi Network Docker Compose Directory..."
 MESSAGES[en,inspect_compose]="Inspecting the Docker Compose File..."
+MESSAGES[en,start_gpsd]="Starting GPSD service..."
 MESSAGES[en,pull_images]="Pulling Required Docker Images..."
 MESSAGES[en,start_services]="Starting the PiPhi Network Services..."
 MESSAGES[en,verify_containers]="Verifying Containers Are Running..."
@@ -70,6 +73,7 @@ MESSAGES[en,install_complete]="Docker and PiPhi installation completed! PiPhi pa
 MESSAGES[en,grafana_access]="Access Grafana: http://<device IP>:3000"
 MESSAGES[en,gps_check]="Check GPS: cgps -s"
 MESSAGES[en,gps_note]="Note: Place the device outdoors for GPS fix (1–5 minutes)."
+MESSAGES[en,install_cron]="Installing and configuring cron..."
 
 # Function to display message
 function msg() {
@@ -119,9 +123,11 @@ function install() {
     apt-get update -y
     apt-get install -y docker-ce docker-ce-cli containerd.io
 
-    # Step 6: Start Docker daemon
+    # Step 6: Start Docker daemon only if not running
     msg "start_docker"
-    nohup dockerd --host=unix:///var/run/docker.sock --storage-driver=vfs > /var/log/dockerd.log 2>&1 &
+    if ! pgrep dockerd > /dev/null; then
+        nohup dockerd --host=unix:///var/run/docker.sock --storage-driver=vfs > /var/log/dockerd.log 2>&1 &
+    fi
     wait_for_docker
 
     # Step 7: Verify Docker Installation
@@ -138,27 +144,38 @@ function install() {
 
     # Step 10: Navigate to the PiPhi Network Docker Compose Directory
     msg "navigate_dir"
-    cd /piphi-network || { echo "Error: Directory /piphi-network does not exist"; exit 1; }
+    cd /piphi-network || { echo "Error: Directory /piphi-network does not exist or is not mounted"; exit 1; }
 
     # Step 11: Inspect the Docker Compose File
     msg "inspect_compose"
-    cat docker-compose.yml
+    if [ -f docker-compose.yml ]; then
+        cat docker-compose.yml
+    else
+        echo "Error: docker-compose.yml not found in /piphi-network. Ensure it is mounted from the host."
+        exit 1
+    fi
 
-    # Step 12: Pull Required Docker Images
+    # Step 12: Start GPSD service
+    msg "start_gpsd"
+    gpsd /dev/ttyACM0 -F /var/run/gpsd.sock
+
+    # Step 13: Pull Required Docker Images
     msg "pull_images"
     docker compose pull
 
-    # Step 13: Start the PiPhi Network Services
+    # Step 14: Start the PiPhi Network Services
     msg "start_services"
     docker compose up -d
 
-    # Step 14: Verify Containers Are Running
+    # Step 15: Verify Containers Are Running
     msg "verify_containers"
     docker compose ps
 
-    # Step 15: Install cron for automatic startup
+    # Step 16: Install and configure cron for automatic startup
+    msg "install_cron"
     apt-get install -y cron
     crontab -l 2>/dev/null; echo '@reboot sleep 60 && cd /piphi-network && docker compose pull && docker compose up -d && docker compose ps' | crontab -
+    service cron start
 
     msg "install_complete"
     msg "grafana_access"
@@ -171,14 +188,14 @@ echo -e ""
 msg "separator"
 if [ "$LANGUAGE" = "pl" ]; then
     echo -e "Skrypt instalacyjny Dockera i PiPhi w kontenerze Ubuntu"
-    echo -e "Wersja: 1.2 | Data: 04 września 2025, 00:28 CEST"
+    echo -e "Wersja: 1.3 | Data: 04 września 2025, 01:15 CEST"
     echo -e "================================================================"
     echo -e "1 - Instalacja Dockera i PiPhi"
     echo -e "2 - Wyjście"
     echo -e "3 - Zmień na język Angielski"
 else
     echo -e "Docker and PiPhi Installation Script for Ubuntu Container"
-    echo -e "Version: 1.2 | Date: September 04, 2025, 12:28 AM CEST"
+    echo -e "Version: 1.3 | Date: September 04, 2025, 01:15 AM CEST"
     echo -e "================================================================"
     echo -e "1 - Install Docker and PiPhi"
     echo -e "2 - Exit"
