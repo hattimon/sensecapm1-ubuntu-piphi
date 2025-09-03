@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Docker and PiPhi Installation Script for Ubuntu Container
-# Version: 1.0
+# Version: 1.1
 # Author: hattimon (with assistance from Grok, xAI)
 # Date: September 03, 2025
-# Description: Installs Docker and runs PiPhi Network Docker Compose inside the Ubuntu container.
+# Description: Installs Docker and runs PiPhi Network Docker Compose inside the Ubuntu container. Based on https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main.
 # This script should be run inside the Ubuntu container after running install-piphi.sh on the host.
 
 # Load or set language from temporary file
@@ -82,7 +82,7 @@ function install() {
 
     # Step 1: Update the System
     msg "update_system"
-    apt-get update
+    apt-get update -y
 
     # Step 2: Install Required Dependencies
     msg "install_deps"
@@ -99,7 +99,7 @@ function install() {
 
     # Step 5: Install Docker Engine
     msg "install_docker"
-    apt-get update
+    apt-get update -y
     apt-get install -y docker-ce docker-ce-cli containerd.io
 
     # Step 6: Verify Docker Installation
@@ -134,8 +134,8 @@ function install() {
     msg "verify_containers"
     docker compose ps
 
-    # Add cron for automatic startup
-    crontab -l 2>/dev/null; echo '@reboot sleep 30 && cd /piphi-network && docker compose pull && docker compose up -d && docker compose ps' | crontab -
+    # Add cron for automatic startup with delay to avoid conflicts
+    crontab -l 2>/dev/null; echo '@reboot sleep 60 && cd /piphi-network && docker compose pull && docker compose up -d && docker compose ps' | crontab -
 
     msg "install_complete"
     msg "grafana_access"
@@ -148,14 +148,14 @@ echo -e ""
 msg "separator"
 if [ "$LANGUAGE" = "pl" ]; then
     echo -e "Skrypt instalacyjny Dockera i PiPhi w kontenerze Ubuntu"
-    echo -e "Wersja: 1.0 | Data: September 03, 2025"
+    echo -e "Wersja: 1.1 | Data: 03 września 2025"
     echo -e "================================================================"
     echo -e "1 - Instalacja Dockera i PiPhi"
     echo -e "2 - Wyjście"
     echo -e "3 - Zmień na język Angielski"
 else
     echo -e "Docker and PiPhi Installation Script for Ubuntu Container"
-    echo -e "Version: 1.0 | Date: September 03, 2025"
+    echo -e "Version: 1.1 | Date: September 03, 2025"
     echo -e "================================================================"
     echo -e "1 - Install Docker and PiPhi"
     echo -e "2 - Exit"
