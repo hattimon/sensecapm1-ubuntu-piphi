@@ -1,5 +1,7 @@
 # Manual Installation Guide (English)
 
+Based on [https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main](https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main).
+
 ## Step 1: Update the System
 ```
 apt-get update
@@ -69,6 +71,8 @@ docker compose ps
 ```
 
 # Podręcznik Instalacji Ręcznej (Polski)
+
+Oparte na [https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main](https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main).
 
 ## Krok 1: Aktualizacja Systemu
 ```
