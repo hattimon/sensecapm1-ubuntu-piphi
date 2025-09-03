@@ -1,15 +1,26 @@
 # PiPhi Network Installer for SenseCAP M1 with balenaOS (English)
 
-This repository provides two scripts to install PiPhi Network on SenseCAP M1 devices running balenaOS.
+This repository, based on [https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main](https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main), provides two scripts to install PiPhi Network on SenseCAP M1 devices running balenaOS.
 
 ## Scripts
 1. **install-piphi.sh**: Installs the Ubuntu container and basic setup.
 2. **install-docker-piphi.sh**: Installs Docker and PiPhi in the Ubuntu container.
 
 ## Installation
-1. Run `install-piphi.sh` on the host.
+1. Download and run `install-piphi.sh` on the host:
+   ```
+   cd /mnt/data
+   wget https://raw.githubusercontent.com/hattimon/sensecapm1-ubuntu-piphi/main/install-piphi.sh
+   chmod +x install-piphi.sh
+   ./install-piphi.sh
+   ```
 2. Enter the Ubuntu container: `balena exec -it ubuntu-piphi /bin/bash`
-3. Run `install-docker-piphi.sh` inside the container.
+3. Download and run `install-docker-piphi.sh` inside the container:
+   ```
+   wget https://raw.githubusercontent.com/hattimon/sensecapm1-ubuntu-piphi/main/install-docker-piphi.sh
+   chmod +x install-docker-piphi.sh
+   ./install-docker-piphi.sh
+   ```
 
 ## Reinstallation
 To reinstall:
@@ -25,16 +36,27 @@ To uninstall:
 
 # PiPhi Network Installer for SenseCAP M1 with balenaOS (Polski)
 
-To repozytorium zawiera dwa skrypty do instalacji PiPhi Network na urządzeniach SenseCAP M1 z balenaOS.
+To repozytorium, oparte na [https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main](https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main), zawiera dwa skrypty do instalacji PiPhi Network na urządzeniach SenseCAP M1 z balenaOS.
 
 ## Skrypty
 1. **install-piphi.sh**: Instaluje kontener Ubuntu i podstawową konfigurację.
 2. **install-docker-piphi.sh**: Instaluje Dockera i PiPhi w kontenerze Ubuntu.
 
 ## Instalacja
-1. Uruchom `install-piphi.sh` na hoście.
+1. Pobierz i uruchom `install-piphi.sh` na hoście:
+   ```
+   cd /mnt/data
+   wget https://raw.githubusercontent.com/hattimon/sensecapm1-ubuntu-piphi/main/install-piphi.sh
+   chmod +x install-piphi.sh
+   ./install-piphi.sh
+   ```
 2. Wejdź do kontenera Ubuntu: `balena exec -it ubuntu-piphi /bin/bash`
-3. Uruchom `install-docker-piphi.sh` w kontenerze.
+3. Pobierz i uruchom `install-docker-piphi.sh` w kontenerze:
+   ```
+   wget https://raw.githubusercontent.com/hattimon/sensecapm1-ubuntu-piphi/main/install-docker-piphi.sh
+   chmod +x install-docker-piphi.sh
+   ./install-docker-piphi.sh
+   ```
 
 ## Ponowna instalacja
 Aby reinstallować:
