@@ -17,6 +17,7 @@ This repository, based on [https://github.com/hattimon/sensecapm1-ubuntu-piphi/t
 2. Enter the Ubuntu container: `balena exec -it ubuntu-piphi /bin/bash`
 3. Download and run `install-docker-piphi.sh` inside the container:
    ```
+   apt install wget
    wget https://raw.githubusercontent.com/hattimon/sensecapm1-ubuntu-piphi/main/install-docker-piphi.sh
    chmod +x install-docker-piphi.sh
    ./install-docker-piphi.sh
@@ -53,6 +54,7 @@ To repozytorium, oparte na [https://github.com/hattimon/sensecapm1-ubuntu-piphi/
 2. Wejdź do kontenera Ubuntu: `balena exec -it ubuntu-piphi /bin/bash`
 3. Pobierz i uruchom `install-docker-piphi.sh` w kontenerze:
    ```
+   apt install wget
    wget https://raw.githubusercontent.com/hattimon/sensecapm1-ubuntu-piphi/main/install-docker-piphi.sh
    chmod +x install-docker-piphi.sh
    ./install-docker-piphi.sh
