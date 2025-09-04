@@ -3,7 +3,7 @@
 
 # Skrypt: ubuntu-piphi-resources.sh
 # Cel: Zmiana CPU i RAM kontenera ubuntu-piphi w BalenaOS, zachowanie danych i automatyczny restart
-# Współdzielony plik konfiguracyjny z install-piphi.sh: /mnt/data/.ubuntu_piphi_config
+# Współdzielony plik konfiguracyjny: /mnt/data/.ubuntu_piphi_config
 # Domyślny język: Polski
 # Data: 04 września 2025
 
@@ -12,6 +12,19 @@ CONTAINER_NAME="ubuntu-piphi"
 HOST_VOLUME="/mnt/data/piphi-network"
 CONTAINER_VOLUME="/piphi-network"
 IMAGE="ubuntu:20.04"
+
+# Sprawdzenie, czy balena jest dostępna
+if ! command -v balena >/dev/null 2>&1; then
+    echo "Błąd: Komenda balena nie jest dostępna. Upewnij się, że działasz w środowisku balenaOS."
+    exit 1
+fi
+
+# Sprawdzenie, czy daemon Docker działa
+if ! balena ps >/dev/null 2>&1; then
+    echo "Błąd: Nie można połączyć się z daemona Docker. Sprawdź, czy działa: systemctl status docker"
+    echo "Sprawdź również, czy /var/run/docker.sock istnieje: ls -l /var/run/docker.sock"
+    exit 1
+fi
 
 # -----------------------
 # Funkcje językowe
@@ -26,7 +39,10 @@ choose_language() {
         *) LANG="PL" ;;
     esac
     # Zapisz język do pliku tymczasowego dla spójności z install-piphi.sh
-    echo "$LANG" > /tmp/language
+    echo "$LANG" > /tmp/language || {
+        echo "Błąd: Nie można zapisać języka do /tmp/language"
+        exit 1
+    }
 }
 
 # Funkcja do wyświetlania komunikatów w wybranym języku
@@ -74,7 +90,7 @@ save_config() {
 # -----------------------
 # Główny skrypt
 # -----------------------
-# Wczytaj język z pliku tymczasowego, jeśli istnieje (dla spójności z install-piphi.sh)
+# Wczytaj język z pliku tymczasowego, jeśli istnieje
 if [ -f /tmp/language ]; then
     LANG=$(cat /tmp/language)
 else
@@ -100,7 +116,10 @@ save_config
 # Sprawdzenie czy kontener istnieje
 if balena ps -a --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
     msg removing
-    balena rm -f ${CONTAINER_NAME}
+    balena rm -f ${CONTAINER_NAME} || {
+        echo "Błąd: Nie można usunąć kontenera ${CONTAINER_NAME}. Sprawdź logi: balena logs ${CONTAINER_NAME}"
+        exit 1
+    }
 fi
 
 # Uruchomienie nowego kontenera
