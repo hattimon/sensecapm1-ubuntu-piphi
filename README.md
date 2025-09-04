@@ -1,6 +1,6 @@
 # PiPhi Network Installer for SenseCAP M1 with balenaOS (English)
 
-This repository, based on [https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main](https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main), provides two scripts to install PiPhi Network on SenseCAP M1 devices running balenaOS, with support for USB GPS dongles.
+This repository, based on [https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main](https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main), provides scripts to install PiPhi Network on SenseCAP M1 devices running balenaOS, with support for USB GPS dongles and resource management.
 
 ## Prerequisites
 - Connect a USB GPS dongle (e.g., U-Blox 7) to the SenseCAP M1.
@@ -8,6 +8,7 @@ This repository, based on [https://github.com/hattimon/sensecapm1-ubuntu-piphi/t
 ## Scripts
 1. **install-piphi.sh**: Installs the Ubuntu container and basic setup.
 2. **install-docker-piphi.sh**: Installs Docker and PiPhi in the Ubuntu container, including GPS support.
+3. **ubuntu-piphi-resources.sh**: Configures CPU and RAM limits for the `ubuntu-piphi` container with language selection (English/Polish).
 
 ## Installation
 1. Download and run `install-piphi.sh` on the host:
@@ -26,11 +27,23 @@ This repository, based on [https://github.com/hattimon/sensecapm1-ubuntu-piphi/t
    ./install-docker-piphi.sh
    ```
 
+## Resource Configuration
+To configure CPU and RAM limits for the `ubuntu-piphi` container:
+1. Download and run `ubuntu-piphi-resources.sh` on the host:
+   ```
+   cd /mnt/data
+   wget https://raw.githubusercontent.com/hattimon/sensecapm1-ubuntu-piphi/main/ubuntu-piphi-resources.sh
+   chmod +x ubuntu-piphi-resources.sh
+   ./ubuntu-piphi-resources.sh
+   ```
+2. Follow the prompts to select the language (English or Polish) and specify CPU cores and RAM limits.
+3. The script will restart the container with the new resource settings and preserve existing data.
+
 ## Reinstallation
 To reinstall:
 - Stop and remove the container: `balena stop ubuntu-piphi && balena rm ubuntu-piphi`
 - Remove files: `rm -rf /mnt/data/piphi-network`
-- Run the scripts again.
+- Run the scripts again (`install-piphi.sh`, `install-docker-piphi.sh`, and optionally `ubuntu-piphi-resources.sh`).
 
 ## Uninstallation
 To uninstall:
@@ -49,7 +62,7 @@ To uninstall:
 
 # PiPhi Network Installer for SenseCAP M1 with balenaOS (Polski)
 
-To repozytorium, oparte na [https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main](https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main), zawiera dwa skrypty do instalacji PiPhi Network na urządzeniach SenseCAP M1 z balenaOS, z obsługą dongli USB GPS.
+To repozytorium, oparte na [https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main](https://github.com/hattimon/sensecapm1-ubuntu-piphi/tree/main), zawiera skrypty do instalacji PiPhi Network na urządzeniach SenseCAP M1 z balenaOS, z obsługą dongli USB GPS i zarządzaniem zasobami.
 
 ## Wymagania wstępne
 - Podłącz dongle USB GPS (np. U-Blox 7) do SenseCAP M1.
@@ -57,6 +70,7 @@ To repozytorium, oparte na [https://github.com/hattimon/sensecapm1-ubuntu-piphi/
 ## Skrypty
 1. **install-piphi.sh**: Instaluje kontener Ubuntu i podstawową konfigurację.
 2. **install-docker-piphi.sh**: Instaluje Dockera i PiPhi w kontenerze Ubuntu, w tym obsługę GPS.
+3. **ubuntu-piphi-resources.sh**: Konfiguruje limity CPU i RAM dla kontenera `ubuntu-piphi` z wyborem języka (angielski/polski).
 
 ## Instalacja
 1. Pobierz i uruchom `install-piphi.sh` na hoście:
@@ -75,11 +89,23 @@ To repozytorium, oparte na [https://github.com/hattimon/sensecapm1-ubuntu-piphi/
    ./install-docker-piphi.sh
    ```
 
+## Konfiguracja zasobów
+Aby skonfigurować limity CPU i RAM dla kontenera `ubuntu-piphi`:
+1. Pobierz i uruchom `ubuntu-piphi-resources.sh` na hoście:
+   ```
+   cd /mnt/data
+   wget https://raw.githubusercontent.com/hattimon/sensecapm1-ubuntu-piphi/main/ubuntu-piphi-resources.sh
+   chmod +x ubuntu-piphi-resources.sh
+   ./ubuntu-piphi-resources.sh
+   ```
+2. Postępuj zgodnie z instrukcjami, aby wybrać język (angielski lub polski) i określić limity rdzeni CPU oraz RAM.
+3. Skrypt zrestartuje kontener z nowymi ustawieniami zasobów, zachowując istniejące dane.
+
 ## Ponowna instalacja
 Aby reinstallować:
 - Zatrzymaj i usuń kontener: `balena stop ubuntu-piphi && balena rm ubuntu-piphi`
 - Usuń pliki: `rm -rf /mnt/data/piphi-network`
-- Uruchom skrypty ponownie.
+- Uruchom skrypty ponownie (`install-piphi.sh`, `install-docker-piphi.sh` oraz opcjonalnie `ubuntu-piphi-resources.sh`).
 
 ## Odinstalowanie
 Aby odinstalować:
