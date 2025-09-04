@@ -7,45 +7,51 @@
 # Domyślny język: Polski
 # Data: 04 września 2025
 
+# Włącz debugowanie
+set -x
+
 CONFIG_FILE="/mnt/data/.ubuntu_piphi_config"
 CONTAINER_NAME="ubuntu-piphi"
 HOST_VOLUME="/mnt/data/piphi-network"
 CONTAINER_VOLUME="/piphi-network"
 IMAGE="ubuntu:20.04"
 
-# Sprawdzenie, czy balena jest dostępna
+# Sprawdzenie środowiska
 if ! command -v balena >/dev/null 2>&1; then
     echo "Błąd: Komenda balena nie jest dostępna. Upewnij się, że działasz w środowisku balenaOS."
     exit 1
 fi
 
-# Sprawdzenie, czy daemon Docker działa
-if ! balena ps >/dev/null 2>&1; then
-    echo "Błąd: Nie można połączyć się z daemona Docker. Sprawdź, czy działa: systemctl status docker"
-    echo "Sprawdź również, czy /var/run/docker.sock istnieje: ls -l /var/run/docker.sock"
+if ! ls /var/run/docker.sock >/dev/null 2>&1; then
+    echo "Błąd: Socket Docker (/var/run/docker.sock) nie istnieje. Sprawdź, czy daemon Docker działa: systemctl status docker"
     exit 1
 fi
 
-# -----------------------
+if ! balena ps >/dev/null 2>&1; then
+    echo "Błąd: Nie można połączyć się z daemona Docker. Sprawdź status: systemctl status docker"
+    exit 1
+fi
+
 # Funkcje językowe
-# -----------------------
 choose_language() {
     echo "Wybierz język:"
     echo "1) English"
     echo "2) Polski (domyślny)"
-    read -p "Wybór [2]: " LANG_CHOICE
+    read -p "Wybór [2]: " LANG_CHOICE </dev/tty || {
+        echo "Błąd: Problem z wejściem użytkownika. Używam domyślnego języka (Polski)."
+        LANG_CHOICE="2"
+    }
     case "$LANG_CHOICE" in
         1) LANG="EN" ;;
         *) LANG="PL" ;;
     esac
-    # Zapisz język do pliku tymczasowego dla spójności z install-piphi.sh
     echo "$LANG" > /tmp/language || {
         echo "Błąd: Nie można zapisać języka do /tmp/language"
         exit 1
     }
 }
 
-# Funkcja do wyświetlania komunikatów w wybranym języku
+# Funkcja komunikatów
 msg() {
     if [ "$LANG" = "PL" ]; then
         case $1 in
@@ -53,7 +59,7 @@ msg() {
             ram_prompt) echo -n "Podaj ilość RAM dla kontenera (np. 2 dla 2GB) [$RAM_LIMIT]: " ;;
             removing) echo "Kontener ${CONTAINER_NAME} już istnieje. Usuwam..." ;;
             starting) echo "Uruchamianie kontenera ${CONTAINER_NAME} z CPU=${CPU_LIMIT} RAM=${RAM_LIMIT}g..." ;;
-            finished) echo "Kontener uruchomiony. Możesz wejść do niego poleceniem:" ;;
+            finished) echo "Kontener uruchomiony. Możesz wejść do niego poleceniem: balena exec -it ${CONTAINER_NAME} /bin/bash" ;;
             error_config) echo "Błąd: Nie można zapisać pliku konfiguracyjnego $CONFIG_FILE" ;;
             error_container) echo "Błąd: Kontener ${CONTAINER_NAME} nie został uruchomiony. Sprawdź logi: balena logs ${CONTAINER_NAME}" ;;
         esac
@@ -63,66 +69,60 @@ msg() {
             ram_prompt) echo -n "Enter amount of RAM for the container (e.g., 2 for 2GB) [$RAM_LIMIT]: " ;;
             removing) echo "Container ${CONTAINER_NAME} already exists. Removing..." ;;
             starting) echo "Starting container ${CONTAINER_NAME} with CPU=${CPU_LIMIT} RAM=${RAM_LIMIT}g..." ;;
-            finished) echo "Container started. You can access it with:" ;;
+            finished) echo "Container started. You can access it with: balena exec -it ${CONTAINER_NAME} /bin/bash" ;;
             error_config) echo "Error: Could not write to configuration file $CONFIG_FILE" ;;
             error_container) echo "Error: Container ${CONTAINER_NAME} failed to start. Check logs: balena logs ${CONTAINER_NAME}" ;;
         esac
     fi
 }
 
-# -----------------------
-# Funkcje konfiguracji
-# -----------------------
+# Wczytywanie konfiguracji
 load_last_config() {
     if [ -f "$CONFIG_FILE" ]; then
         source "$CONFIG_FILE"
     else
-        CPU_LIMIT="2.0"  # Domyślna wartość zgodna z install-piphi.sh
-        RAM_LIMIT="2"    # Domyślna wartość zgodna z install-piphi.sh
+        CPU_LIMIT="2.0"  # Zgodne z install-piphi.sh
+        RAM_LIMIT="2"    # Zgodne z install-piphi.sh
     fi
 }
 
+# Zapisywanie konfiguracji
 save_config() {
     echo "CPU_LIMIT=\"$CPU_LIMIT\"" > "$CONFIG_FILE" || { msg error_config; exit 1; }
     echo "RAM_LIMIT=\"$RAM_LIMIT\"" >> "$CONFIG_FILE" || { msg error_config; exit 1; }
 }
 
-# -----------------------
 # Główny skrypt
-# -----------------------
-# Wczytaj język z pliku tymczasowego, jeśli istnieje
 if [ -f /tmp/language ]; then
     LANG=$(cat /tmp/language)
 else
     LANG="PL"
 fi
 
-# Pozwól użytkownikowi zmienić język, jeśli chce
 choose_language
 load_last_config
 
-# Pobranie parametrów od użytkownika (z domyślnymi wartościami)
+# Pobranie parametrów
 msg cpu_prompt
-read CPU_INPUT
+read -p "" CPU_INPUT </dev/tty || CPU_INPUT=""
 CPU_LIMIT=${CPU_INPUT:-$CPU_LIMIT}
 
 msg ram_prompt
-read RAM_INPUT
+read -p "" RAM_INPUT </dev/tty || RAM_INPUT=""
 RAM_LIMIT=${RAM_INPUT:-$RAM_LIMIT}
 
-# Zapisz konfigurację
 save_config
 
-# Sprawdzenie czy kontener istnieje
+# Usuwanie istniejącego kontenera
 if balena ps -a --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
     msg removing
     balena rm -f ${CONTAINER_NAME} || {
-        echo "Błąd: Nie można usunąć kontenera ${CONTAINER_NAME}. Sprawdź logi: balena logs ${CONTAINER_NAME}"
+        echo "Błąd: Nie można usunąć kontenera ${CONTAINER_NAME}"
         exit 1
     }
 fi
 
-# Uruchomienie nowego kontenera
+# Uruchomienie kontenera
 msg starting
 balena run -d \
   --privileged \
@@ -137,5 +137,4 @@ balena run -d \
   /bin/bash -c "while true; do sleep 3600; done" || { msg error_container; exit 1; }
 
 msg finished
-echo "balena exec -it ${CONTAINER_NAME} /bin/bash"
 ```
