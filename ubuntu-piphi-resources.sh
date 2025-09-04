@@ -1,10 +1,11 @@
+```bash
 #!/bin/bash
 
 # Skrypt: ubuntu-piphi-resources.sh
 # Cel: zmiana CPU i RAM kontenera ubuntu-piphi w BalenaOS, zachowanie danych i automatyczny restart
 # Dodano wybór języka (angielski / polski)
 
-CONFIG_FILE="$HOME/.ubuntu_piphi_config"
+CONFIG_FILE="/mnt/data/.ubuntu_piphi_config"
 CONTAINER_NAME="ubuntu-piphi"
 HOST_VOLUME="/mnt/data/piphi-network"
 CONTAINER_VOLUME="/piphi-network"
@@ -100,3 +101,4 @@ balena run -d \
 
 msg finished
 echo "balena exec -it ${CONTAINER_NAME} /bin/bash"
+```
